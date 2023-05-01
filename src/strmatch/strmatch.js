@@ -1,29 +1,108 @@
 /**
-//  * Abstract Class StrSimilarity
-//  * 
-//  * @class StrSimilarity
-//  */ 
-// class StrMatching{
+ * Abstract Class StrSimilarity
+ * 
+ * @class StrSimilarity
+ */ 
+class StrMatching{
 
-//     compare(text, pattern);
+    comparePattern(text, pattern){
+        throw new Error('Kosong');
+    }
 
-// }
+}
+
+class KMP extends StrMatching{
+    comparePattern(text,pattern){
+        let lps = this.createLPS(pattern);
+        let n = text.length;
+        let m = pattern.length;
+        let i =0;
+        let j =0;
+        while(i<n){
+            if (pattern[j] == text[i]){
+                i++;
+                j++;
+                if(j==m){
+                    return true;
+                }
+                
+            }else{
+                if(j>0){
+                    j = lps[j-1];
+                }else{
+                    i++;
+                }
+            }
+        }
+        return false;
+    }
+    createLPS(pattern){
+        let lps = new Array();
+        lps[0] = 0;
+        let i = 1;
+        let j = 0;
+        let m = pattern.length;
+
+        while(i<m){
+            
+            if(pattern[i] == pattern[j]){
+                lps[i++] = ++j;
+            }else{
+                if(j!=0){
+                    j = lps[j - 1];
+                }else{
+                    lps[i++] = 0;
+                }
+            }
+        }
+        return lps;
+
+    }
 
 
+}
 
-// class KMP extends StrMatching{
-//     comparePattern(text,pattern){
+class BM extends StrMatching{
+    static CHAR_NUM  = 256;
+    comparePattern(text,pattern){
+        let n = text.length;
+        let m = pattern.length;
 
-//     }
-// }
+        let last = this.getLastOccurance(pattern);
+        let i = m-1;
 
-// class BM extends StrMatching{
+        if(i>n-1){
+            return -1;
+        }
+        let j = m-1;
+        do{
+            if(pattern[j]==text[i]){
+                if(j==0){
+                    return true;
+                }else{
+                    i--;
+                    j--;
+                }
+            }else{
+                i = i+m-Math.min(j, 1+last[text[i]]);
+                j=m-1;
+            }
 
-// }
+        }while(i<=n-1);
+        return false;
+    }
+    getLastOccurance(pattern){
+        var array = new Array(this.CHAR_NUM);
+        array.fill(-1, 0, this.CHAR_NUM);
+        for(let i = 0; i<pattern.length; i++){
+            array[pattern[i]] = i;
+        }
 
-// class StrSimilarity{
-//     compare(text, pattern);
-// }
+
+        return array;
+    }
+}
+
 
 class Levensthein{
     compare(text, pattern){
@@ -48,5 +127,11 @@ class Levensthein{
 }
 
 let test = new Levensthein();
+let test2 = new KMP();
+let test3 = new BM();
 
+const pattern = 'abc';
+const text = 'ababcabcababc';
 console.log(test.compare('Fia', 'Kucing'));
+console.log(test2.comparePattern(text, pattern));
+console.log(test3.comparePattern(text,pattern));
