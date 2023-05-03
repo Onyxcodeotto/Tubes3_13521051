@@ -1,5 +1,6 @@
-const mysql = require('mysql');
-const mysqldump = require('mysqldump');
+const strmatch = require('../strmatch/strmatch.js');
+const mysql = require('C:\\Windows\\System32\\node_modules\\mysql');
+const mysqldump = require('C:\\Windows\\System32\\node_modules\\mysqldump');
 const fs = require('fs');
 const { exec } = require('child_process');
 
@@ -80,4 +81,51 @@ function history(descr){
         connection.end();
     });
     return hist;
+}
+
+function getAnswer(){
+    let lev = new Levensthein();
+    let kmp = new KMP();
+    let bm = new BM();
+
+    const connection = mysql.createConnection({
+        host: host,
+        user: user,
+        password: password,
+        database: database
+    });
+
+    let questions = [];
+    connection.connect((err) => {
+        if (err) throw err;
+        console.log("Connected.");
+
+        connection.query("SELECT question FROM qna", (err, result) => {
+            if (err) throw err;
+            questions = result;
+        });
+        connection.end();
+    });
+
+    let match = questions[0][0];
+
+    for(let i_question in questions){
+        if ((1-(lev.compare(q,i_question[0])/Math.max(q.length, i_question[0].length))) > (1-(lev.compare(q,match)/Math.max(q.length, match.length)))){
+            match = i_question[0];
+        }
+    }
+
+    let ans;
+    connection.connect((err) => {
+        if (err) throw err;
+        console.log("Connected.");
+
+        connection.query("SELECT answer FROM qna WHERE question = ?", [match], (err, result) => {
+            if (err) throw err;
+            ans = result;
+        });
+        connection.end();
+    });
+
+    return ans[0];
 }
