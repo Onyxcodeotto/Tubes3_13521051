@@ -1,6 +1,6 @@
 const strmatch = require('../strmatch/strmatch.js');
-const mysql = require('C:\\Windows\\System32\\node_modules\\mysql');
-const mysqldump = require('C:\\Windows\\System32\\node_modules\\mysqldump');
+const mysql = require('mysql');
+const mysqldump = require('mysqldump');
 const fs = require('fs');
 const { exec } = require('child_process');
 
@@ -80,6 +80,7 @@ function history(descr){
         });
         connection.end();
     });
+    dumpDatabase();
     return hist;
 }
 
@@ -120,12 +121,35 @@ function getAnswer(){
         if (err) throw err;
         console.log("Connected.");
 
-        connection.query("SELECT answer FROM qna WHERE question = ?", [match], (err, result) => {
+        connection.query("SELECT answer FROM qna WHERE question = ${match}", (err, result) => {
             if (err) throw err;
             ans = result;
         });
         connection.end();
     });
 
+    dumpDatabase();
     return ans[0];
+}
+
+function addqna(q,a){
+    const connection = mysql.createConnection({
+        host: host,
+        user: user,
+        password: password,
+        database: database
+    });
+
+    connection.connect((err) => {
+        if (err) throw err;
+        console.log("Connected.");
+
+        connection.query("INSERT INTO qna (question, answer) VALUES (${q}, ${a})", (err, result) => {
+            if (err) throw err;
+            console.log(result);
+        });
+        connection.end();
+    });
+
+    dumpDatabase();
 }
