@@ -54,6 +54,7 @@ function App() {
           className="chat-input-textarea"
           placeholder = "Type Your message here">
           </textarea>
+          <button className="chat-send-button">Send</button>
         </div>
       </section>
     </div>
