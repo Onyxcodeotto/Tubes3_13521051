@@ -1,6 +1,5 @@
 const strmatch = require('../strmatch/strmatch.js');
 const mysql = require('mysql');
-const mysqldump = require('mysqldump');
 const fs = require('fs');
 const { exec } = require('child_process');
 
@@ -85,9 +84,9 @@ function history(descr){
 }
 
 function getAnswer(text){
-    let lev = new Levensthein();
-    let kmp = new KMP();
-    let bm = new BM();
+    let lev = new strmatch.Levensthein();
+    let kmp = new strmatch.KMP();
+    let bm = new strmatch.BM();
 
     const connection = mysql.createConnection({
         host: host,
