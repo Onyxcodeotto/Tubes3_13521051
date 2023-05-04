@@ -84,7 +84,7 @@ function history(descr){
     return hist;
 }
 
-function getAnswer(){
+function getAnswer(text){
     let lev = new Levensthein();
     let kmp = new KMP();
     let bm = new BM();
@@ -97,6 +97,11 @@ function getAnswer(){
     });
 
     let questions = [];
+    let question;
+    let ans;
+    let pattern;
+    let found = false;
+    let match = question[0][0];
     connection.connect((err) => {
         if (err) throw err;
         console.log("Connected.");
@@ -105,21 +110,50 @@ function getAnswer(){
             if (err) throw err;
             questions = result;
         });
-        connection.end();
-    });
-
-    let match = questions[0][0];
-
-    for(let i_question in questions){
-        if ((1-(lev.compare(q,i_question[0])/Math.max(q.length, i_question[0].length))) > (1-(lev.compare(q,match)/Math.max(q.length, match.length)))){
-            match = i_question[0];
+        
+        // KMP
+        for(question in questions){
+            pattern = question[0];
+            if(kmp.comparePattern(text, pattern) == true){
+                found = true;
+                match = question[0];
+            }
         }
-    }
+        // if found with KMP
+        if(found){
+            connection.query("SELECT answer FROM qna WHERE question = ${match}", (err, result) => {
+                if (err) throw err;
+                ans = result;
+            });
+            dumpDatabase();
+            return ans[0];
+        }
 
-    let ans;
-    connection.connect((err) => {
-        if (err) throw err;
-        console.log("Connected.");
+        // BM
+        for(question in questions){
+            pattern = question[0];
+            if(bm.comparePattern(text, pattern) == true){
+                found = true;
+                match = question[0];
+            }
+        }
+        // if found with BM
+        if(found){
+            connection.query("SELECT answer FROM qna WHERE question = ${match}", (err, result) => {
+                if (err) throw err;
+                ans = result;
+            });
+            dumpDatabase();
+            return ans[0];
+        }
+
+        // Levensthein
+        for(question in questions){
+            pattern = question[0];
+            if ((1-(lev.compare(text,pattern)/Math.max(text.length, pattern.length))) > (1-(lev.compare(text,match)/Math.max(text.length, match.length)))){
+                match = question[0];
+            }
+        }
 
         connection.query("SELECT answer FROM qna WHERE question = ${match}", (err, result) => {
             if (err) throw err;
