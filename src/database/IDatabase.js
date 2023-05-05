@@ -1,7 +1,8 @@
 const { Levensthein, KMP, BM } = require('../strmatch/strmatch');
 const mysql = require('mysql');
-const fs = require('fs');
-const { exec } = require('child_process');
+const mysqldump = require('mysqldump');
+// const fs = require('fs');
+// const { exec } = require('child_process');
 
 const host = "localhost";
 const user = "root";
@@ -9,30 +10,58 @@ const password = "password";
 const database = "askflickerdb";
 const dumpfile = __dirname + "\\askflickerdb.sql";
 
-function dumpDatabase(){
-    const connection2 = mysql.createConnection({
-        host: host,
-        user: user,
-        password: password,
-        database: database
+function dumpDatabase() {
+  const connection2 = mysql.createConnection({
+    host: host,
+    user: user,
+    password: password,
+    database: database
+  });
+
+  connection2.connect((err) => {
+    if (err) throw err;
+    console.log("Connected.");
+
+    mysqldump({
+      connection: connection2,
+      dumpToFile: dumpfile
+    })
+    .then(() => {
+      console.log('Dumped.');
+      connection2.end();
+    })
+    .catch((error) => {
+      console.error(error);
+      connection2.end();
     });
-    
-    connection2.connect((err) => {
-        if (err) throw err;
-        console.log("Connected.");
-      
-        const dump = fs.readFileSync(dumpfile, 'utf8');
-        const statements = dump.split(';');
-      
-        statements.forEach((statement) => {
-          connection2.query(statement, (err, result) => {
-            if (err) throw err;
-          });
-        });
-      
-        connection2.end();
-    });
+  });
 }
+
+
+// function dumpDatabase(){
+//     const connection2 = mysql.createConnection({
+//         host: host,
+//         user: user,
+//         password: password,
+//         database: database
+//     });
+    
+//     connection2.connect((err) => {
+//         if (err) throw err;
+//         console.log("Connected.");
+      
+//         const dump = fs.readFileSync(dumpfile, 'utf8');
+//         const statements = dump.split(';');
+      
+//         statements.forEach((statement) => {
+//           connection2.query(statement, (err, result) => {
+//             if (err) throw err;
+//           });
+//         });
+      
+//         connection2.end();
+//     });
+// }
 
 function readDatabase(){
     const connection = mysql.createConnection({

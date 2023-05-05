@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import './normal.css';
-import './strmatch/strmatch';
-const {getAnswer} = require('./database/IDatabase');
+import './strmatch/strmatch.js';
+import {getAnswer}  from './database/IDatabase';
 
 function App() {
   const [chatButtons, setChatButtons] = useState([]);
