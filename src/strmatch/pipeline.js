@@ -9,18 +9,19 @@ class Pipeline{
 
     determine(input){
         
-        if(this.dateRe.test()){
-            return this.dateRe.match();
+        if(this.dateRe.test(input)){
+            return 0;
         }
-        if(this.equationRe.test()){
-            return this.equationRe.match();
+        if(this.equationRe.test(input)){
+            return 1;
         }
-        if(this.addQ.test()){
-            return this.addQ.match();
+        if(this.addQ.test(input)){
+            return 2;
         }
-        if(this.deleteQ.test()){
-            return this.deleteQ.match();
+        if(this.deleteQ.test(input)){
+            return 3;
         }
+        return -1;
     }
 };
 var result = stringMath("2+2");
