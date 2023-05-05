@@ -6,9 +6,11 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "babel-loader": "^9.1.2",
     "buffer": "^6.0.3",
     "crypto": "^1.0.1",
     "crypto-browserify": "^3.12.0",
+    "html-webpack-plugin": "^5.5.1",
     "mysql": "^2.18.1",
     "mysql2": "^3.2.4",
     "mysqldump": "^3.2.0",
@@ -16,7 +18,9 @@
     "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
+    "react-refresh-webpack-plugin": "^0.1.0",
+    "react-scripts": "^5.0.1",
+    "source-map-loader": "^4.0.1",
     "stream": "^0.0.2",
     "timers": "^0.1.1",
     "tls": "^0.0.1",
@@ -31,13 +35,6 @@
   },
   "fallbackDependencies": {
     "crypto": "crypto-browserify"
-  },
-  "webpack": {
-    "resolve": {
-      "fallback": {
-        "crypto": "require.resolve(crypto-browserify)"
-      }
-    }
   },
   "scripts": {
     "start": "react-scripts start",
