@@ -1,7 +1,8 @@
-const strmatch = require('../strmatch/strmatch.js');
+const { Levensthein, KMP, BM } = require('../strmatch/strmatch');
 const mysql = require('mysql');
-const fs = require('fs');
-const { exec } = require('child_process');
+const mysqldump = require('mysqldump');
+// const fs = require('fs');
+// const { exec } = require('child_process');
 
 const host = "localhost";
 const user = "root";
@@ -9,31 +10,58 @@ const password = "password";
 const database = "askflickerdb";
 const dumpfile = __dirname + "\\askflickerdb.sql";
 
-function dumpDatabase(){
-    const connection2 = mysql.createConnection({
-        host: host,
-        user: user,
-        password: password,
-        database: database
+function dumpDatabase() {
+  const connection2 = mysql.createConnection({
+    host: host,
+    user: user,
+    password: password,
+    database: database
+  });
+
+  connection2.connect((err) => {
+    if (err) throw err;
+    console.log("Connected.");
+
+    mysqldump({
+      connection: connection2,
+      dumpToFile: dumpfile
+    })
+    .then(() => {
+      console.log('Dumped.');
+      connection2.end();
+    })
+    .catch((error) => {
+      console.error(error);
+      connection2.end();
     });
-    
-    connection2.connect((err) => {
-        if (err) throw err;
-        console.log("Connected.");
-      
-        const dump = fs.readFileSync(dumpfile, 'utf8');
-        const statements = dump.split(';');
-      
-        statements.forEach((statement) => {
-          connection2.query(statement, (err, result) => {
-            if (err) throw err;
-            console.log(result);
-          });
-        });
-      
-        connection2.end();
-    });
+  });
 }
+
+
+// function dumpDatabase(){
+//     const connection2 = mysql.createConnection({
+//         host: host,
+//         user: user,
+//         password: password,
+//         database: database
+//     });
+    
+//     connection2.connect((err) => {
+//         if (err) throw err;
+//         console.log("Connected.");
+      
+//         const dump = fs.readFileSync(dumpfile, 'utf8');
+//         const statements = dump.split(';');
+      
+//         statements.forEach((statement) => {
+//           connection2.query(statement, (err, result) => {
+//             if (err) throw err;
+//           });
+//         });
+      
+//         connection2.end();
+//     });
+// }
 
 function readDatabase(){
     const connection = mysql.createConnection({
@@ -52,7 +80,6 @@ function readDatabase(){
       
         connection.query("CREATE DATABASE askflickerdb;", (err, result) => {
             if (err) throw err;
-            console.log(result);
         });
         connection.end();
     });
@@ -73,7 +100,7 @@ function history(descr){
         if (err) throw err;
         console.log("Connected.");
 
-        connection.query("SELECT question, answer FROM history WHERE descr = ?", [descr] , (err, result) => {
+        connection.query("SELECT question, answer FROM history WHERE descr = " + descr, (err, result) => {
             if (err) throw err;
             hist = result;
         });
@@ -83,87 +110,96 @@ function history(descr){
     return hist;
 }
 
-function getAnswer(text){
-    let lev = new strmatch.Levensthein();
-    let kmp = new strmatch.KMP();
-    let bm = new strmatch.BM();
 
-    const connection = mysql.createConnection({
+function getAnswer(text){
+    return new Promise((resolve, reject) => {
+      let lev = new Levensthein();
+      let kmp = new KMP();
+      let bm = new BM();
+  
+      const connection = mysql.createConnection({
         host: host,
         user: user,
         password: password,
         database: database
-    });
-
-    let questions = [];
-    let question;
-    let ans;
-    let pattern;
-    let found = false;
-    let match = question[0][0];
-    connection.connect((err) => {
-        if (err) throw err;
+      });
+  
+      let question;
+      let pattern;
+      let found = false;
+      let match;
+      connection.connect((err) => {
+        if (err) {
+          reject(err);
+        }
         console.log("Connected.");
-
+  
         connection.query("SELECT question FROM qna", (err, result) => {
-            if (err) throw err;
-            questions = result;
-        });
-        
-        // KMP
-        for(question in questions){
-            pattern = question[0];
+          if (err) {
+            reject(err);
+          }
+          const questions = result.map(obj => obj.question);
+  
+          match = questions[0];
+  
+          // KMP
+          for(question in questions){
+            pattern = question;
             if(kmp.comparePattern(text, pattern) == true){
-                found = true;
-                match = question[0];
+              found = true;
+              match = question;
             }
-        }
-        // if found with KMP
-        if(found){
-            connection.query("SELECT answer FROM qna WHERE question = ${match}", (err, result) => {
-                if (err) throw err;
-                ans = result;
+          }
+          // if found with KMP
+          if(found){
+            connection.query("SELECT answer FROM qna WHERE question = " + match, (err, result) => {
+              if (err) {
+                reject(err);
+              }
+              let ans = result[0].answer;
+              resolve(ans);
             });
-            dumpDatabase();
-            return ans[0];
-        }
-
-        // BM
-        for(question in questions){
-            pattern = question[0];
+          }
+          // BM
+          for(question in questions){
+            pattern = question;
             if(bm.comparePattern(text, pattern) == true){
-                found = true;
-                match = question[0];
+              found = true;
+              match = question;
             }
-        }
-        // if found with BM
-        if(found){
-            connection.query("SELECT answer FROM qna WHERE question = ${match}", (err, result) => {
-                if (err) throw err;
-                ans = result;
+          }
+          // if found with BM
+          if(found){
+            connection.query("SELECT answer FROM qna WHERE question = " + match, (err, result) => {
+              if (err) {
+                reject(err);
+              }
+              let ans = result[0].answer;
+              resolve(ans);
             });
-            dumpDatabase();
-            return ans[0];
-        }
-
-        // Levensthein
-        for(question in questions){
-            pattern = question[0];
+          }
+  
+          // Levensthein
+          for(question in questions){
+            pattern = question;
             if ((1-(lev.compare(text,pattern)/Math.max(text.length, pattern.length))) > (1-(lev.compare(text,match)/Math.max(text.length, match.length)))){
-                match = question[0];
+              match = question;
             }
-        }
-
-        connection.query("SELECT answer FROM qna WHERE question = ${match}", (err, result) => {
-            if (err) throw err;
-            ans = result;
+          }
+  
+          connection.query("SELECT answer FROM qna WHERE question = '"+ match +"'", (err, result) => {
+            if (err) {
+              reject(err);
+            }
+            let ans = result[0].answer;
+            resolve(ans);
+          });
+          connection.end();
         });
-        connection.end();
+      });
     });
+  }
 
-    dumpDatabase();
-    return ans[0];
-}
 
 function addqna(q,a){
     const connection = mysql.createConnection({
@@ -177,7 +213,7 @@ function addqna(q,a){
         if (err) throw err;
         console.log("Connected.");
 
-        connection.query("INSERT INTO qna (question, answer) VALUES (${q}, ${a})", (err, result) => {
+        connection.query("INSERT INTO qna (question, answer) VALUES (" + q + "," +  a + ")", (err, result) => {
             if (err) throw err;
             console.log(result);
         });
@@ -186,3 +222,8 @@ function addqna(q,a){
 
     dumpDatabase();
 }
+
+module.exports = {
+    getAnswer: getAnswer,
+    dumpDatabase: dumpDatabase
+  };

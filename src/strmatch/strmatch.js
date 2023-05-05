@@ -126,12 +126,16 @@ class Levensthein{
     }
 }
 
+module.exports = {
+    Levensthein, KMP, BM
+  };
+
 let test = new Levensthein();
 let test2 = new KMP();
 let test3 = new BM();
 
 const pattern = 'abc';
 const text = 'ababcabcababc';
-console.log(test.compare('Fia', 'Kucing'));
-console.log(test2.comparePattern(text, pattern));
-console.log(test3.comparePattern(text,pattern));
+// console.log(test.compare('Fia', 'Kucing'));
+// console.log(test2.comparePattern(text, pattern));
+// console.log(test3.comparePattern(text,pattern));
