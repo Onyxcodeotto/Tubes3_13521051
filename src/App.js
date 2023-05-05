@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+
 import logo from './logo.svg';
 import './App.css';
 import './normal.css';
 import './strmatch/strmatch';
+import React, { useState, useEffect, useRef } from 'react';
 
 function App() {
   const [chatButtons, setChatButtons] = useState([]);
   const [chatInput, setMessage] = useState('');
   const [chatLog, setChatLog] = useState([{message: "Hello World!", sender: "user"}, {message: "Hello Another World.", sender: "chatgpt"}]);
+  const chatLogRef = useRef(null);
 
   const handleNewSession = () => {
     setChatButtons([...chatButtons, <div className='side-menu-button'>New Session</div>]);
@@ -26,9 +28,13 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
+  }, [chatLog]);
+
   return (
     <div className="App">
-      <aside className='sidemenu'>
+      <aside className='sidemenu'  style={{overflowY: 'auto'}} >
         <div className='side-menu-button' onClick={handleNewSession}>
           <span>
             +
@@ -37,9 +43,9 @@ function App() {
         </div>
         {chatButtons} {}
       </aside>  
-      <section className='chatbox'>
-        <div className='chat-log'>
-        {chatLog.map((chat, index) => (
+      <section className='chatbox'  style={{overflowY: 'auto'}} >
+        <div className='chat-log' ref={chatLogRef}>
+          {chatLog.map((chat, index) => (
             <div key={index} className={`chat-message ${chat.sender}`}>
               <div className='chat-message-center'>
                 <div className={`avatar ${chat.sender}`}>
@@ -50,18 +56,16 @@ function App() {
               </div>
             </div>
           ))}
-        </div>
-        <div
-        className="chat-input-holder">
-          <textarea
-          rows="1"
-          className="chat-input-textarea"
-          placeholder = "Type Your message here"
-          value={chatInput}
-          onChange={handleMessageChange}
-          >
-          </textarea>
-          <button className="chat-send-button" onClick={handleSend}>Send</button>
+          <div className="chat-input-holder">
+            <textarea
+              rows="1"
+              className="chat-input-textarea"
+              placeholder="Type Your message here"
+              value={chatInput}
+              onChange={handleMessageChange}
+            ></textarea>
+            <button className="chat-send-button" onClick={handleSend}>Send</button>
+          </div>
         </div>
       </section>
     </div>

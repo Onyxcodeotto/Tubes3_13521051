@@ -54,6 +54,7 @@
   position:absolute;
   bottom:0;
   left: 0;right: 0;
+  transform: translate(0, calc(-100% + 100px));
 
 }
 
@@ -89,6 +90,9 @@
 
 .chat-log{
   text-align: left;
+  overflow-y: auto;
+  /* add this to position the chat-input-holder inside the chat-log div */
+  position: relative;
 }
 
 .chat-message.chatgpt{
