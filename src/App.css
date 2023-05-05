@@ -55,6 +55,7 @@
   bottom:0;
   left: 0;right: 0;
   transform: translate(0, calc(-100% + 100px));
+  overflow-y: auto;
 
 }
 
@@ -91,8 +92,7 @@
 .chat-log{
   text-align: left;
   overflow-y: auto;
-  /* add this to position the chat-input-holder inside the chat-log div */
-  position: relative;
+  height: 630px;
 }
 
 .chat-message.chatgpt{
@@ -108,6 +108,33 @@
   padding-left: 24px;
   padding-right: 24px;
 }
+
+.chat-log:after {
+  content: "";
+  display: block;
+  height: 1px;
+  visibility: hidden;
+}
+
+.chat-log-scroll {
+  scroll-behavior: smooth;
+}
+
+.chat-log-scroll .chat-message {
+  animation: chat-message 0.5s ease-out;
+}
+
+@keyframes chat-message {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
 .avatar{
   background:white;

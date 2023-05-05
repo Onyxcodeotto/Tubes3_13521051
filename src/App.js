@@ -1,10 +1,9 @@
 
-import logo from './logo.svg';
 import './App.css';
 import './normal.css';
 import './strmatch/strmatch.js';
 import React, { useState, useEffect, useRef } from 'react';
-import {getAnswer}  from './database/IDatabase';
+
 
 
 function App() {
