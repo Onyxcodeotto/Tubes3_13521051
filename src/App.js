@@ -2,14 +2,10 @@
 import logo from './logo.svg';
 import './App.css';
 import './normal.css';
-<<<<<<< HEAD
 import './strmatch/strmatch.js';
 import React, { useState, useEffect, useRef } from 'react';
 import {getAnswer}  from './database/IDatabase';
-=======
-import './strmatch/strmatch.js';
-import {getAnswer}  from './database/IDatabase';
->>>>>>> 1900f8f46d6f837d7ce1cfc62fa4a7bd263f359e
+
 
 function App() {
   const [chatButtons, setChatButtons] = useState([]);
