@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import './normal.css';
 import './strmatch/strmatch';
+const {getAnswer} = require('./database/IDatabase');
 
 function App() {
   const [chatButtons, setChatButtons] = useState([]);
@@ -21,8 +22,13 @@ function App() {
         message: chatInput,
         sender: 'user'
       };
-      setChatLog([...chatLog, newMessage]);
       setMessage('');
+
+      const replyMessage = {
+        message: 'reply',
+        sender: 'chatgpt'
+      }
+      setChatLog([...chatLog, newMessage, replyMessage]);
     }
   }
 
